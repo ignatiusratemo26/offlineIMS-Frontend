@@ -1,0 +1,54 @@
+oims-frontend/
+├── public/
+│   ├── index.html
+│   ├── favicon.ico
+│   └── manifest.json
+├── src/
+│   ├── components/
+│   │   ├── auth/
+│   │   │   ├── Login.jsx
+│   │   │   └── PrivateRoute.jsx
+│   │   ├── layout/
+│   │   │   ├── Sidebar.jsx
+│   │   │   ├── Header.jsx
+│   │   │   ├── Footer.jsx
+│   │   │   └── Dashboard.jsx
+│   │   ├── inventory/
+│   │   │   ├── EquipmentList.jsx
+│   │   │   ├── EquipmentDetail.jsx
+│   │   │   ├── EquipmentForm.jsx
+│   │   │   ├── MaintenanceList.jsx
+│   │   │   └── CategoryList.jsx
+│   │   ├── projects/
+│   │   │   ├── ProjectList.jsx
+│   │   │   ├── ProjectDetail.jsx
+│   │   │   ├── ProjectForm.jsx
+│   │   │   └── DocumentList.jsx
+│   │   ├── bookings/
+│   │   │   ├── BookingList.jsx
+│   │   │   ├── BookingForm.jsx
+│   │   │   └── Calendar.jsx
+│   │   └── users/
+│   │       ├── UserList.jsx
+│   │       ├── UserDetail.jsx
+│   │       └── UserForm.jsx
+│   ├── services/
+│   │   ├── api.js
+│   │   ├── auth.service.js
+│   │   ├── inventory.service.js
+│   │   ├── project.service.js
+│   │   ├── booking.service.js
+│   │   └── user.service.js
+│   ├── contexts/
+│   │   └── AuthContext.jsx
+│   ├── utils/
+│   │   ├── axiosConfig.js
+│   │   └── helpers.js
+│   ├── assets/
+│   │   ├── css/
+│   │   └── images/
+│   ├── App.jsx
+│   ├── index.jsx
+│   └── theme.js
+├── package.json
+└── README.md
