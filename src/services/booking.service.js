@@ -39,16 +39,44 @@ const bookingService = {
   cancelBooking: (bookingId) => {
     return api.delete(BASE_PATH, bookingId);
   },
-  
-  // Approve/reject booking (for admins/lab managers)
-  approveBooking: (bookingId) => {
-    return api.create(`${BASE_PATH}/${bookingId}/approve`, {});
+  // Approve/reject equipment booking (for admins/lab managers/technicians)
+  approveEquipmentBooking: (bookingId) => {
+    return api.create(`${BASE_PATH}/equipment-bookings/${bookingId}/approve`, {});
   },
   
-  rejectBooking: (bookingId, reason) => {
-    return api.create(`${BASE_PATH}/${bookingId}/reject`, { reason });
+  rejectEquipmentBooking: (bookingId, reason) => {
+    return api.create(`${BASE_PATH}/equipment-bookings/${bookingId}/reject`, { reason });
   },
   
+  // Approve/reject workspace booking (for admins/lab managers/technicians)
+  approveWorkspaceBooking: (bookingId) => {
+    return api.create(`${BASE_PATH}/workspace-bookings/${bookingId}/approve`, {});
+  },
+  
+  rejectWorkspaceBooking: (bookingId, reason) => {
+    return api.create(`${BASE_PATH}/workspace-bookings/${bookingId}/reject`, { reason });
+  },
+  
+  // Generic approve/reject functions that determine the booking type
+  approveBooking: async (bookingId, bookingType) => {
+    if (bookingType === 'EQUIPMENT') {
+      return await bookingService.approveEquipmentBooking(bookingId);
+    } else if (bookingType === 'WORKSPACE') {
+      return await bookingService.approveWorkspaceBooking(bookingId);
+    } else {
+      throw new Error('Invalid booking type');
+    }
+  },
+  
+  rejectBooking: async (bookingId, reason, bookingType) => {
+    if (bookingType === 'EQUIPMENT') {
+      return await bookingService.rejectEquipmentBooking(bookingId, reason);
+    } else if (bookingType === 'WORKSPACE') {
+      return await bookingService.rejectWorkspaceBooking(bookingId, reason);
+    } else {
+      throw new Error('Invalid booking type');
+    }
+  },
   // Workspace endpoints
   getWorkspaces: (params = {}) => {
     return api.getList(`${BASE_PATH}/workspaces`, params);

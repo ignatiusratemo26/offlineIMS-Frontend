@@ -206,8 +206,8 @@ const Calendar = () => {
     if (!day) return [];
     
     return bookings.filter(booking => {
-      const bookingDate = parseISO(booking.start_time);
-      return isSameDay(bookingDate, day);
+      const bookingStart = booking.start_time ? parseISO(booking.start_time) : parseISO(booking.start);
+      return isSameDay(bookingStart, day);
     });
   };
 
@@ -243,19 +243,39 @@ const Calendar = () => {
         </Typography>
         
         <Box sx={{ overflow: 'auto', maxHeight: '85px' }}>
-          {dayBookings.length > 0 ? (
-            dayBookings.map(booking => (
+        {dayBookings.length > 0 ? (
+          dayBookings.map(booking => {
+            // Determine resource name based on available fields
+            let resourceName = '';
+            
+            // Handle both data formats
+            if (booking.resourceName) {
+              // New format
+              resourceName = booking.resourceName;
+            } else if (booking.resource_type === 'EQUIPMENT') {
+              // Old format
+              resourceName = booking.equipment?.name;
+            } else {
+              // Old format - workspace
+              resourceName = booking.workspace?.name;
+            }
+            
+            // Truncate name if too long
+            const displayName = resourceName?.substring(0, 15) || 'Unnamed';
+            
+            // Get the status (support both formats)
+            const status = booking.status;
+            
+            return (
               <Chip
                 key={booking.id}
-                label={booking.resource_type === 'EQUIPMENT' 
-                  ? booking.equipment?.name?.substring(0, 15) 
-                  : booking.workspace?.name?.substring(0, 15)}
+                label={displayName}
                 size="small"
                 onClick={() => handleBookingClick(booking)}
                 sx={{ 
                   mb: 0.5, 
                   width: '100%',
-                  backgroundColor: getStatusColor(booking.status),
+                  backgroundColor: booking.color || getStatusColor(status),
                   color: '#fff',
                   justifyContent: 'flex-start',
                   textOverflow: 'ellipsis',
@@ -266,7 +286,8 @@ const Calendar = () => {
                   }
                 }}
               />
-            ))
+            );
+          })
           ) : (
             <Typography variant="caption" color="text.secondary">
               No bookings
