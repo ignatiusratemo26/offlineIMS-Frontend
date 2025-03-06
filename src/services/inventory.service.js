@@ -73,14 +73,14 @@ const inventoryService = {
   
   // Usage logs
   getUsageLogs: (params = {}) => {
-    return api.getList(`${BASE_PATH}/usage_logs`, params);
+    return api.getList(`${BASE_PATH}/usage-logs`, params);
   },
   
   // File upload for equipment image
   uploadEquipmentImage: (equipmentId, imageFile) => {
     const formData = new FormData();
     formData.append('image', imageFile);
-    return api.uploadFile(`${BASE_PATH}/equipment/${equipmentId}/upload_image`, formData);
+    return api.uploadFile(`${BASE_PATH}/equipment/${equipmentId}/upload_image/`, formData);
   }
 };
 

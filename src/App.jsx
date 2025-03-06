@@ -18,15 +18,15 @@ import MaintenanceList from './components/inventory/MaintenanceList';
 import CategoryList from './components/inventory/CategoryList';
 
 // Projects Components
-// import ProjectList from './components/projects/ProjectList';
-// import ProjectDetail from './components/projects/ProjectDetail';
-// import ProjectForm from './components/projects/ProjectForm';
-// import DocumentList from './components/projects/DocumentList';
+import ProjectList from './components/projects/ProjectList';
+import ProjectDetail from './components/projects/ProjectDetail';
+import ProjectForm from './components/projects/ProjectForm';
+import DocumentList from './components/projects/DocumentList';
 
-// // Bookings Components
-// import BookingList from './components/bookings/BookingList';
-// import BookingForm from './components/bookings/BookingForm';
-// import Calendar from './components/bookings/Calendar';
+// Bookings Components
+import BookingList from './components/bookings/BookingList';
+import BookingForm from './components/bookings/BookingForm';
+import Calendar from './components/bookings/Calendar';
 
 // // Users Components
 // import UserList from './components/users/UserList';
@@ -63,13 +63,13 @@ function App() {
           <Route path="categories" element={<CategoryList />} />
           
           {/* Projects Routes */}
-          {/* <Route path="projects">
+          <Route path="projects">
             <Route index element={<ProjectList />} />
             <Route path="new" element={<ProjectForm />} />
             <Route path=":id" element={<ProjectDetail />} />
             <Route path=":id/edit" element={<ProjectForm />} />
             <Route path=":id/documents" element={<DocumentList />} />
-          </Route> */}
+          </Route>
           
           {/* Bookings Routes */}
           <Route path="bookings">

@@ -23,6 +23,19 @@ export const formatDateTime = (dateString) => {
   }
 };
 
+// File helpers
+export const formatFileSize = (bytes) => {
+    if (bytes === undefined || bytes === null) return '';
+    
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    if (bytes === 0) return '0 Bytes';
+    
+    const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)), 10);
+    if (i === 0) return `${bytes} ${sizes[i]}`;
+    
+    return `${(bytes / (1024 ** i)).toFixed(1)} ${sizes[i]}`;
+  };
+
 export const formatTimeAgo = (dateString) => {
   if (!dateString) return '';
   try {
