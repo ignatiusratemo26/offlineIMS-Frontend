@@ -53,7 +53,8 @@ const BookingForm = () => {
     start_time: addHours(new Date(), 1), // Default to 1 hour from now
     end_time: addHours(new Date(), 3),   // Default 2 hour duration
     purpose: '',
-    notes: ''
+    notes: '',
+    participants_count: 1
   };
 
   // Form state
@@ -309,26 +310,75 @@ const BookingForm = () => {
     
     try {
       // Prepare the data for submission
-      const submitData = { ...formData };
+    //   const submitData = { ...formData };
       
-      // Format dates for API
-      submitData.start_time = format(formData.start_time, "yyyy-MM-dd'T'HH:mm:ss");
-      submitData.end_time = format(formData.end_time, "yyyy-MM-dd'T'HH:mm:ss");
+    //   // Format dates for API
+    //   submitData.start_time = format(formData.start_time, "yyyy-MM-dd'T'HH:mm:ss");
+    //   submitData.end_time = format(formData.end_time, "yyyy-MM-dd'T'HH:mm:ss");
       
-      // Extract IDs from objects
-      if (submitData.equipment) submitData.equipment_id = submitData.equipment.id;
-      if (submitData.workspace) submitData.workspace_id = submitData.workspace.id;
-      if (submitData.project) submitData.project_id = submitData.project.id;
+    //   // Extract IDs from objects
+    //   if (submitData.equipment) submitData.equipment_id = submitData.equipment.id;
+    //   if (submitData.workspace) submitData.workspace_id = submitData.workspace.id;
+    //   if (submitData.project) submitData.project_id = submitData.project.id;
       
-      // Remove object references before sending
-      delete submitData.equipment;
-      delete submitData.workspace;
-      delete submitData.project;
+    //   // Remove object references before sending
+    //   delete submitData.equipment;
+    //   delete submitData.workspace;
+    //   delete submitData.project;
       
-      if (isEditMode) {
-        await bookingService.updateBooking(id, submitData);
-      } else {
-        await bookingService.createBooking(submitData);
+    //   if (isEditMode) {
+    //     await bookingService.updateBooking(id, submitData);
+    //   } else {
+    //     await bookingService.createBooking(submitData);
+    //   }
+    const submitData = {
+        purpose: formData.purpose,
+        notes: formData.notes || '',
+      };
+      
+      // Create or get booking slot
+      const slotData = {
+        date: format(formData.start_time, "yyyy-MM-dd"),
+        start_time: format(formData.start_time, "HH:mm:ss"),
+        end_time: format(formData.end_time, "HH:mm:ss")
+      };
+      
+      // First create or get the slot
+      let slotResponse;
+      try {
+        // Try to find existing slot
+        slotResponse = await bookingService.findOrCreateSlot(slotData);
+      } catch (slotError) {
+        console.error("Error with booking slot:", slotError);
+        throw new Error("Failed to create booking slot. Please try different times.");
+      }
+      
+      // Add slot ID to submit data
+      submitData.slot = slotResponse.id;
+      
+      // Add resource-specific IDs based on resource type
+      if (formData.resource_type === 'EQUIPMENT') {
+        submitData.equipment = formData.equipment?.id;
+        
+        if (isEditMode) {
+          await bookingService.updateEquipmentBooking(id, submitData);
+        } else {
+          await bookingService.createEquipmentBooking(submitData);
+        }
+      } else { // WORKSPACE
+        submitData.workspace = formData.workspace?.id;
+        submitData.participants_count = formData.participants_count || 1;
+        
+        if (isEditMode) {
+          await bookingService.updateWorkspaceBooking(id, submitData);
+        } else {
+          await bookingService.createWorkspaceBooking(submitData);
+        }
+      }
+      
+      // Add project if selected
+      if (formData.project) {
+        submitData.project_name = formData.project.title || formData.project.name;
       }
       
       // Navigate to bookings list

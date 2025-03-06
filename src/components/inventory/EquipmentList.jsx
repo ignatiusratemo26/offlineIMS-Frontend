@@ -209,7 +209,7 @@ const EquipmentList = () => {
                   {item.name}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" noWrap>
-                  {item.category?.name || 'No Category'}
+                  {item.category_name || 'No Category'}
                 </Typography>
                 <Box sx={{ mt: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Chip 
