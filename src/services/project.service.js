@@ -26,19 +26,19 @@ const projectService = {
   
   // Project members
   getProjectMembers: (projectId) => {
-    return api.getList(`${BASE_PATH}/${projectId}/members`);
+    return api.getList(`${BASE_PATH}/${projectId}/team_members`);
   },
   
   addProjectMember: (projectId, memberData) => {
-    return api.create(`${BASE_PATH}/${projectId}/members`, memberData);
+    return api.create(`${BASE_PATH}/${projectId}/add_team_member`, memberData);
   },
   
   removeProjectMember: (projectId, memberId) => {
-    return api.delete(`${BASE_PATH}/${projectId}/members`, memberId);
+    return api.delete(`${BASE_PATH}/${projectId}/remove_team_member`, memberId);
   },
   
   updateProjectMember: (projectId, memberId, memberData) => {
-    return api.update(`${BASE_PATH}/${projectId}/members`, memberId, memberData);
+    return api.update(`${BASE_PATH}/${projectId}/update_team_member`, memberId, memberData);
   },
   
   // Project documents
@@ -63,9 +63,61 @@ const projectService = {
     return api.delete(`${BASE_PATH}/${projectId}/documents`, documentId);
   },
   
-  // Project statistics
-  getProjectStatistics: (projectId) => {
-    return api.getById(`${BASE_PATH}/${projectId}/statistics`);
+  // Get project statistics - fixed to remove the undefined in URL
+  getProjectStatistics: async (projectId) => {
+    try {
+      // Make sure projectId is defined and correct
+      if (!projectId) {
+        throw new Error('Project ID is required for fetching statistics');
+      }
+    
+      return await api.getList(`${BASE_PATH}/${projectId}/statistics`, {});
+
+    } catch (error) {
+      console.error('Error fetching project statistics:', error);
+      return {
+        project_id: projectId,
+        project_title: '',
+        status: '',
+        days_active: 0,
+        days_remaining: null,
+        team_size: 0,
+        total_tasks: 0,
+        completed_tasks: 0,
+        task_completion_percentage: 0,
+        total_documents: 0,
+        resource_count: 0,
+        created_by: {
+          id: null,
+          name: 'Unknown'
+        },
+        lab: ''
+      };
+    }
+  },
+  
+  // Get tasks for a project
+  getProjectTasks: async (projectId, params = {}) => {
+    return api.getList(`${BASE_PATH}/${projectId}/tasks`, params);
+  },
+  
+  // Create a new task for a project
+  createProjectTask: async (projectId, taskData) => {
+    return api.create(`${BASE_PATH}/${projectId}/tasks`, taskData);
+  },
+  
+  // Update a task
+  updateProjectTask: async (projectId, taskId, taskData) => {
+    return api.update(`${BASE_PATH}/${projectId}/tasks`, taskId, taskData);
+  },
+  
+  // Delete a task
+  deleteProjectTask: async (projectId, taskId) => {
+    return api.delete(`${BASE_PATH}/${projectId}/tasks`, taskId);
+  },
+  // Get all documents across projects (for DocumentList component)
+  getAllDocuments: (params = {}) => {
+    return api.getList(`${BASE_PATH}/documents`, params);
   }
 };
 

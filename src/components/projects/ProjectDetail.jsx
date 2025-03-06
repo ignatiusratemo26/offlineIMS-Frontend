@@ -15,6 +15,7 @@ import {
   IconButton,
   List,
   ListItem,
+  ListItemIcon,
   ListItemText,
   ListItemAvatar,
   ListItemButton,
@@ -105,9 +106,15 @@ const ProjectDetail = () => {
         const documentsData = await projectService.getProjectDocuments(id);
         setDocuments(documentsData.results || documentsData);
         
-        // Fetch related bookings
-        const bookingsData = await bookingService.getBookings({ project_id: id });
-        setBookings(bookingsData.results || bookingsData);
+        try {
+            // Try to get project bookings from a more specific endpoint
+            const bookingsData = await bookingService.getProjectBookings(id);
+            setBookings(bookingsData.results || bookingsData);
+          } catch (bookingErr) {
+            console.error('Error fetching project bookings:', bookingErr);
+            // Fallback to empty array if the endpoint doesn't exist or there's an error
+            setBookings([]);
+          }
         
         // Fetch project statistics
         const statsData = await projectService.getProjectStatistics(id);
@@ -283,7 +290,7 @@ const ProjectDetail = () => {
   
   const canManageDocuments = () => {
     // Project members can upload documents
-    const isMember = members.some(member => member.user.id === authState.user?.id);
+    const isMember = members.some(member => member.id === authState.user?.id);
     return isProjectOwner() || isMember || hasPermission(authState.user, 'ADMIN');
   };
   
@@ -338,7 +345,7 @@ const ProjectDetail = () => {
               Back
             </Button>
             <Typography variant="h4" component="h1">
-              {project.name}
+              {project.title}
             </Typography>
             <Chip 
               label={project.status}
@@ -428,31 +435,43 @@ const ProjectDetail = () => {
             <Card variant="outlined">
               <CardHeader title="Project Statistics" />
               <CardContent>
-                {statistics ? (
-                  <Box>
+              {statistics ? (
+                <Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="body2">Team Size:</Typography>
+                    <Typography variant="body2" fontWeight="bold">{statistics.team_size || 0}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="body2">Documents:</Typography>
+                    <Typography variant="body2" fontWeight="bold">{statistics.total_documents || 0}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="body2">Tasks:</Typography>
+                    <Typography variant="body2" fontWeight="bold">{statistics.total_tasks || 0}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="body2">Completed Tasks:</Typography>
+                    <Typography variant="body2" fontWeight="bold">
+                    {statistics.completed_tasks || 0} ({statistics.task_completion_percentage?.toFixed(0) || 0}%)
+                    </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="body2">Resource Count:</Typography>
+                    <Typography variant="body2" fontWeight="bold">{statistics.resource_count || 0}</Typography>
+                </Box>
+                {statistics.days_active > 0 && (
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">Members:</Typography>
-                      <Typography variant="body2" fontWeight="bold">{statistics.member_count || 0}</Typography>
+                    <Typography variant="body2">Days Active:</Typography>
+                    <Typography variant="body2" fontWeight="bold">{statistics.days_active}</Typography>
                     </Box>
+                )}
+                {statistics.days_remaining !== null && (
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">Documents:</Typography>
-                      <Typography variant="body2" fontWeight="bold">{statistics.document_count || 0}</Typography>
+                    <Typography variant="body2">Days Remaining:</Typography>
+                    <Typography variant="body2" fontWeight="bold">{statistics.days_remaining}</Typography>
                     </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">Equipment Bookings:</Typography>
-                      <Typography variant="body2" fontWeight="bold">{statistics.equipment_booking_count || 0}</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">Workspace Bookings:</Typography>
-                      <Typography variant="body2" fontWeight="bold">{statistics.workspace_booking_count || 0}</Typography>
-                    </Box>
-                    {project.start_date && (
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant="body2">Project Age:</Typography>
-                        <Typography variant="body2" fontWeight="bold">{formatTimeAgo(project.start_date)}</Typography>
-                      </Box>
-                    )}
-                  </Box>
+                )}
+                </Box>
                 ) : (
                   <Typography variant="body2" color="text.secondary">
                     No statistics available
@@ -532,20 +551,22 @@ const ProjectDetail = () => {
                   >
                     <ListItemAvatar>
                       <Avatar>
-                        {member.user.username?.charAt(0) || 'U'}
+                        {member.username?.charAt(0) || 'U'}
                       </Avatar>
                     </ListItemAvatar>
                     <ListItemText
-                      primary={member.user.username}
+                      primary={member.username}
                       secondary={
                         <>
-                          {member.user.email && (
+                          {member.email && (
                             <Typography component="span" variant="body2" color="text.primary">
-                              {member.user.email}
+                              {member.email}
                             </Typography>
                           )}
                           <br />
-                          Role: {member.role || 'Member'} | Joined: {formatDate(member.joined_at)}
+                            {/* If joined_at exists, format it, otherwise use first_name and last_name */}
+                            {member.joined_at ? `Joined: ${formatDate(member.joined_at)}` : 
+                            `${member.first_name || ''} ${member.last_name || ''}`.trim()}
                         </>
                       }
                     />

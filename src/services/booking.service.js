@@ -11,7 +11,23 @@ const bookingService = {
   getBookingById: (bookingId) => {
     return api.getById(BASE_PATH, bookingId);
   },
-  
+
+  getProjectBookings: async (projectId) => {
+    try {
+      // Try equipment bookings first
+      const equipmentBookings = await api.getList(`${BASE_PATH}/equipment-bookings`, { project_id: projectId });
+      
+      // Try workspace bookings
+      const workspaceBookings = await api.getList(`${BASE_PATH}/workspace-bookings`, { project_id: projectId });
+      
+      // Combine both types of bookings
+      return [...(equipmentBookings.results || equipmentBookings || []), 
+              ...(workspaceBookings.results || workspaceBookings || [])];
+    } catch (error) {
+      console.error('Error fetching project bookings:', error);
+      return []; // Return empty array on error
+    }
+  },  
   createBooking: (bookingData) => {
     return api.create(BASE_PATH, bookingData);
   },

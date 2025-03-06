@@ -1,6 +1,6 @@
 import api from './api';
 
-const BASE_PATH = '/users';
+const BASE_PATH = '/users/users';
 
 const userService = {
   // User management

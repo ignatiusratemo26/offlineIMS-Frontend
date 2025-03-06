@@ -45,7 +45,7 @@ const ProjectForm = () => {
 
   // Form state
   const [formData, setFormData] = useState({
-    name: '',
+    title: '',
     description: '',
     start_date: new Date(),
     end_date: null,
@@ -245,7 +245,7 @@ const ProjectForm = () => {
     const errors = {};
     
     // Required fields
-    if (!formData.name.trim()) errors.name = 'Project name is required';
+    if (!formData.title.trim()) errors.name = 'Project title is required';
     if (!formData.status) errors.status = 'Status is required';
     if (!formData.lab) errors.lab = 'Lab is required';
     if (!formData.start_date) errors.start_date = 'Start date is required';
@@ -292,7 +292,10 @@ const ProjectForm = () => {
       if (isEditMode) {
         await projectService.updateProject(id, submitData);
       } else {
-        const newProject = await projectService.createProject(submitData);
+        const newProject = await projectService.createProject({
+            ...submitData,
+            created_by: authState.user.id 
+          });
         projectId = newProject.id;
         
         // Add team members to new project
@@ -329,10 +332,15 @@ const ProjectForm = () => {
     );
   }
 
-  // Filter out users who are already added as team members
+    // Filter out users who are already added as team members
 
     const filteredUsers = Array.isArray(availableUsers) 
-    ? availableUsers.filter(user => !members.some(member => member.user.id === user.id))
+    ? availableUsers.filter(user => 
+        user && user.id && 
+        !members.some(member => 
+            member && member.user && member.user.id === user.id
+        )
+        )
     : [];
 
   return (
@@ -370,9 +378,9 @@ const ProjectForm = () => {
                 <TextField
                   required
                   fullWidth
-                  label="Project Name"
-                  name="name"
-                  value={formData.name}
+                  label="Project Title"
+                  name="title"
+                  value={formData.title}
                   onChange={handleInputChange}
                   error={!!validationErrors.name}
                   helperText={validationErrors.name}
@@ -495,7 +503,7 @@ const ProjectForm = () => {
                   error={!!validationErrors.budget}
                   helperText={validationErrors.budget}
                   InputProps={{
-                    startAdornment: <div style={{ marginRight: 8 }}>$</div>,
+                    startAdornment: <div style={{ marginRight: 8 }}>Ksh</div>,
                   }}
                 />
               </Grid>
@@ -616,10 +624,10 @@ const ProjectForm = () => {
                   >
                     <Box>
                       <Typography variant="body2" fontWeight="medium">
-                        {member.user.username}
+                        {member.first_name +' '+member.last_name || member?.user?.username || 'Unknown User'}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {member.role}
+                        {member.role || 'Member'}
                       </Typography>
                     </Box>
                     <IconButton 
