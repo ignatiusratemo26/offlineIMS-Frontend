@@ -1,6 +1,6 @@
 import axios from '../utils/axiosConfig';
 
-const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+const baseURL = import.meta.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 // Generic API service with common CRUD operations
 const api = {
