@@ -237,9 +237,9 @@ const BookingList = () => {
     if (!booking) return 'Unknown';
     
     if (booking.resource_type === 'EQUIPMENT') {
-      return booking.equipment?.name || 'Unknown Equipment';
+      return booking.equipment_details.name || 'Unknown Equipment';
     } else {
-      return booking.workspace?.name || 'Unknown Workspace';
+      return booking.workspace_details.name || 'Unknown Workspace';
     }
   };
 
@@ -511,14 +511,29 @@ const BookingList = () => {
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2">
-                          {formatDate(booking.start_time)}
+                          {formatDate(booking.slot_details.date)}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {new Date(booking.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(booking.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {(() => {
+                            // Combine date with time to create valid datetime
+                            const date = booking.slot_details.date;
+                            const startTime = booking.slot_details.start_time;
+                            const endTime = booking.slot_details.end_time;
+                            
+                            // Create proper date objects by combining date and time
+                            const startDateTime = new Date(`${date}T${startTime}`);
+                            const endDateTime = new Date(`${date}T${endTime}`);
+                            
+                            // Format them as time strings
+                            const startFormatted = startDateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            const endFormatted = endDateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            
+                            return `${startFormatted} - ${endFormatted}`;
+                          })()}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        {booking.user?.username || 'Unknown'}
+                        {booking.user_details?.username || 'Unknown'}
                       </TableCell>
                       <TableCell>
                         <Typography 

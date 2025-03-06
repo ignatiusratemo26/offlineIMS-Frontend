@@ -8,8 +8,33 @@ const bookingService = {
     return api.getList(BASE_PATH, params);
   },
   
-  getBookingById: (bookingId) => {
-    return api.getById(BASE_PATH, bookingId);
+// Update the getBookingById method to handle the different booking types
+
+  getBookingById: async (bookingId) => {
+    // First determine if ID is prefixed with type
+    if (typeof bookingId === 'string') {
+      if (bookingId.startsWith('equipment_')) {
+        const id = bookingId.replace('equipment_', '');
+        return api.getById(`${BASE_PATH}/equipment-bookings`, id);
+      } else if (bookingId.startsWith('workspace_')) {
+        const id = bookingId.replace('workspace_', '');
+        return api.getById(`${BASE_PATH}/workspace-bookings`, id);
+      }
+    }
+    
+    // If no prefix or numeric ID, try both endpoints
+    try {
+      // First try equipment bookings
+      return await api.getById(`${BASE_PATH}/equipment-bookings`, bookingId);
+    } catch (error) {
+      // If that fails, try workspace bookings
+      try {
+        return await api.getById(`${BASE_PATH}/workspace-bookings`, bookingId);
+      } catch (workspaceError) {
+        // If both fail, throw the original error
+        throw error;
+      }
+    }
   },
 
   getProjectBookings: async (projectId) => {

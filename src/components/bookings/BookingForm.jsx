@@ -92,19 +92,70 @@ const BookingForm = () => {
         
         // If editing, fetch booking details
         if (isEditMode) {
-          const bookingResponse = await bookingService.getBookingById(id);
+            try {
+            const bookingResponse = await bookingService.getBookingById(id);
+            
+            // Determine resource type from the response
+            let resourceType = 'EQUIPMENT';
+            let equipmentItem = null;
+            let workspaceItem = null;
+            let startTime, endTime;
+            
+            if (bookingResponse.equipment) {
+                resourceType = 'EQUIPMENT';
+                // Find the equipment in the list
+                equipmentItem = equipment.find(e => e.id === bookingResponse.equipment) || null;
+                
+                if (!equipmentItem && bookingResponse.equipment_details) {
+                equipmentItem = bookingResponse.equipment_details;
+                }
+            } else if (bookingResponse.workspace) {
+                resourceType = 'WORKSPACE';
+                // Find the workspace in the list
+                workspaceItem = workspaces.find(w => w.id === bookingResponse.workspace) || null;
+                
+                if (!workspaceItem && bookingResponse.workspace_details) {
+                workspaceItem = bookingResponse.workspace_details;
+                }
+            }
+            
+            // Handle different date formats
+            if (bookingResponse.start_time && bookingResponse.end_time) {
+                // Direct start/end time properties
+                startTime = parseISO(bookingResponse.start_time);
+                endTime = parseISO(bookingResponse.end_time);
+            } else if (bookingResponse.slot_details) {
+                // Slot-based bookings
+                const slotDate = bookingResponse.slot_details.date;
+                const slotStartTime = bookingResponse.slot_details.start_time;
+                const slotEndTime = bookingResponse.slot_details.end_time;
+                
+                startTime = new Date(`${slotDate}T${slotStartTime}`);
+                endTime = new Date(`${slotDate}T${slotEndTime}`);
+            }
+            
+            // Format data for form
+            const formattedData = {
+                resource_type: resourceType,
+                equipment: equipmentItem,
+                workspace: workspaceItem,
+                start_time: startTime,
+                end_time: endTime,
+                purpose: bookingResponse.purpose || '',
+                notes: bookingResponse.notes || '',
+                participants_count: bookingResponse.participants_count || 1,
+                // Keep the original data for reference
+                originalBooking: bookingResponse
+            };
           
-          // Format dates
-          const formattedData = {
-            ...bookingResponse,
-            start_time: parseISO(bookingResponse.start_time),
-            end_time: parseISO(bookingResponse.end_time),
-          };
+            setFormData(formattedData);
           
-          setFormData(formattedData);
-          
-          // Check availability to ensure it's still valid
-          await checkResourceAvailability(formattedData);
+            // Check availability to ensure it's still valid
+            await checkResourceAvailability(formattedData);
+          } catch (bookingError) {
+            console.error('Error fetching booking details:', bookingError);
+            setError(`Could not find booking with ID ${id}. It may have been deleted or you don't have permission to view it.`);
+          }
         }
       } catch (err) {
         console.error('Error loading initial data:', err);
@@ -309,28 +360,7 @@ const BookingForm = () => {
     setError(null);
     
     try {
-      // Prepare the data for submission
-    //   const submitData = { ...formData };
-      
-    //   // Format dates for API
-    //   submitData.start_time = format(formData.start_time, "yyyy-MM-dd'T'HH:mm:ss");
-    //   submitData.end_time = format(formData.end_time, "yyyy-MM-dd'T'HH:mm:ss");
-      
-    //   // Extract IDs from objects
-    //   if (submitData.equipment) submitData.equipment_id = submitData.equipment.id;
-    //   if (submitData.workspace) submitData.workspace_id = submitData.workspace.id;
-    //   if (submitData.project) submitData.project_id = submitData.project.id;
-      
-    //   // Remove object references before sending
-    //   delete submitData.equipment;
-    //   delete submitData.workspace;
-    //   delete submitData.project;
-      
-    //   if (isEditMode) {
-    //     await bookingService.updateBooking(id, submitData);
-    //   } else {
-    //     await bookingService.createBooking(submitData);
-    //   }
+
     const submitData = {
         purpose: formData.purpose,
         notes: formData.notes || '',
